@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import com.jcatena.travelbackend.participant.Participant;
+import com.jcatena.travelbackend.expense.Expense;
 import jakarta.persistence.OneToMany;
 import java.util.List;
 
@@ -38,4 +39,7 @@ public class Trip {
 
     @OneToMany(mappedBy = "trip")
     private List<Participant> participants;
+
+    @OneToMany(mappedBy = "trip")
+    private List<Expense> expenses;
 }
