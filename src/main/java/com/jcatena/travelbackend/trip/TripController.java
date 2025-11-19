@@ -2,6 +2,7 @@ package com.jcatena.travelbackend.trip;
 
 import com.jcatena.travelbackend.trip.dto.TripRequest;
 import com.jcatena.travelbackend.trip.dto.TripResponse;
+import com.jcatena.travelbackend.trip.dto.TripSummaryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -28,5 +29,10 @@ public class TripController {
     @GetMapping("/{id}")
     public TripResponse getTrip(@PathVariable Long id) {
         return tripService.getTripById(id);
+    }
+
+    @GetMapping("/{id}/summary")
+    public TripSummaryResponse getTripSummary(@PathVariable Long id) {
+        return tripService.getSummary(id);
     }
 }
