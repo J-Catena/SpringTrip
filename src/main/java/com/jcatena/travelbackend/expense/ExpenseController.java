@@ -1,6 +1,5 @@
-package com.jcatena.travelbackend;
+package com.jcatena.travelbackend.expense;
 
-import com.jcatena.travelbackend.expense.ExpenseService;
 import com.jcatena.travelbackend.expense.dto.ExpenseRequest;
 import com.jcatena.travelbackend.expense.dto.ExpenseResponse;
 import jakarta.validation.Valid;
