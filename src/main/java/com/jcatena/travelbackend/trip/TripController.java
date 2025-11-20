@@ -3,6 +3,7 @@ package com.jcatena.travelbackend.trip;
 import com.jcatena.travelbackend.trip.dto.TripRequest;
 import com.jcatena.travelbackend.trip.dto.TripResponse;
 import com.jcatena.travelbackend.trip.dto.TripSummaryResponse;
+import com.jcatena.travelbackend.trip.dto.TripSettlementResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -35,4 +36,10 @@ public class TripController {
     public TripSummaryResponse getTripSummary(@PathVariable Long id) {
         return tripService.getSummary(id);
     }
+
+    @GetMapping("/{id}/settlement")
+    public TripSettlementResponse getTripSettlement(@PathVariable Long id) {
+        return tripService.getSettlement(id);
+    }
+
 }
