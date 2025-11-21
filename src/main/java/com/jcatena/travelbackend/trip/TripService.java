@@ -57,19 +57,18 @@ public class TripService {
     // Summary del viaje
     public TripSummaryResponse getSummary(Long tripId) {
 
-        // 1. Cargamos el viaje
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new NotFoundException("Trip not found with id: " + tripId));
 
-        // 2. Todos los gastos del viaje
+        // 1. Todos los gastos del viaje
         List<Expense> expenses = expenseRepository.findByTripId(tripId);
 
-        // 3. Total gastado en el viaje
+        // 2. Total gastado en el viaje
         BigDecimal totalAmount = expenses.stream()
                 .map(Expense::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 4. Total pagado por cada participante (map id -> importe)
+        // 3. Total pagado por cada participante (map id -> cantidad)
         Map<Long, BigDecimal> totalPerParticipant = expenses.stream()
                 .collect(Collectors.groupingBy(
                         e -> e.getPayer().getId(),
@@ -79,13 +78,13 @@ public class TripService {
                         )
                 ));
 
-        // 5. Lista de participantes del viaje
+        // 4. Lista de participantes del viaje
         List<Participant> participantEntities =
                 trip.getParticipants() == null ? List.of() : trip.getParticipants();
 
         int numParticipants = participantEntities.size();
 
-        // 6. Parte justa por persona (fair share)
+        // 5. Parte justa por persona (fair share)
         BigDecimal fairShare = numParticipants == 0
                 ? BigDecimal.ZERO
                 : totalAmount.divide(
@@ -94,7 +93,7 @@ public class TripService {
                 RoundingMode.HALF_UP
         );
 
-        // 7. Construimos el resumen por participante (incluye balance)
+        // 6. Construimos la lista de summaries por participante (incluye balance)
         List<TripSummaryResponse.ParticipantSummary> participants =
                 participantEntities.stream()
                         .map(p -> {
@@ -109,9 +108,23 @@ public class TripService {
                                     .balance(balance)
                                     .build();
                         })
-                        .toList();
+                        .collect(Collectors.toList()); // importante: lista modificable
 
-        // 8. Devolvemos el summary completo del viaje
+        // 7. Ajuste de redondeo: forzamos que la suma de balances sea EXACTAMENTE 0
+        BigDecimal balanceSum = participants.stream()
+                .map(TripSummaryResponse.ParticipantSummary::getBalance)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (balanceSum.compareTo(BigDecimal.ZERO) != 0 && !participants.isEmpty()) {
+            // buscamos algún acreedor (balance > 0) para absorber el desajuste
+            TripSummaryResponse.ParticipantSummary target = participants.stream()
+                    .filter(p -> p.getBalance() != null && p.getBalance().compareTo(BigDecimal.ZERO) > 0)
+                    .findFirst()
+                    .orElse(participants.get(0)); // si no hay acreedores, ajustamos al primero
+
+            target.setBalance(target.getBalance().subtract(balanceSum));
+        }
+
         return TripSummaryResponse.builder()
                 .tripId(trip.getId())
                 .tripName(trip.getName())
