@@ -4,6 +4,7 @@ import com.jcatena.travelbackend.trip.dto.TripRequest;
 import com.jcatena.travelbackend.trip.dto.TripResponse;
 import com.jcatena.travelbackend.trip.dto.TripSummaryResponse;
 import com.jcatena.travelbackend.trip.dto.TripSettlementResponse;
+import com.jcatena.travelbackend.trip.dto.TripUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +46,12 @@ public class TripController {
     @DeleteMapping("/{id}")
     public void deleteTrip(@PathVariable Long id) {
         tripService.deleteTrip(id);
+    }
+
+    @PutMapping("/{id}")
+    public TripResponse updateTrip(@PathVariable Long id,
+                                   @RequestBody TripUpdateRequest request) {
+        return tripService.updateTrip(id, request);
     }
 
 

@@ -9,6 +9,7 @@ import com.jcatena.travelbackend.trip.dto.TripRequest;
 import com.jcatena.travelbackend.trip.dto.TripResponse;
 import com.jcatena.travelbackend.trip.dto.TripSummaryResponse;
 import com.jcatena.travelbackend.trip.dto.TripSettlementResponse;
+import com.jcatena.travelbackend.trip.dto.TripUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -244,8 +245,43 @@ public class TripService {
         tripRepository.delete(trip);
     }
 
+    // Modificar datos del viaje
+    public TripResponse updateTrip(Long id, TripUpdateRequest request) {
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Trip not found with id: " + id));
 
-    // Modificar
+        // 1. Solo actualizamos los campos que vengan no nulos
+        if (request.getName() != null) {
+            trip.setName(request.getName());
+        }
+
+        if (request.getDescription() != null) {
+            trip.setDescription(request.getDescription());
+        }
+
+        if (request.getCurrency() != null) {
+            trip.setCurrency(request.getCurrency());
+        }
+
+        if (request.getStartDate() != null) {
+            trip.setStartDate(request.getStartDate());
+        }
+
+        if (request.getEndDate() != null) {
+            trip.setEndDate(request.getEndDate());
+        }
+
+        // 2. Validación básica de coherencia de fechas (si las dos están definidas)
+        if (trip.getStartDate() != null && trip.getEndDate() != null
+                && trip.getStartDate().isAfter(trip.getEndDate())) {
+
+            throw new IllegalArgumentException("startDate cannot be after endDate");
+        }
+
+        Trip saved = tripRepository.save(trip);
+        return toResponse(saved);
+    }
+
 
 
 
