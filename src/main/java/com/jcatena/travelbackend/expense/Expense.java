@@ -33,7 +33,7 @@ public class Expense {
     @Column(nullable = false)
     private LocalDate date;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
 

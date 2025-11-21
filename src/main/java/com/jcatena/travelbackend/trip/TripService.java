@@ -4,12 +4,14 @@ import com.jcatena.travelbackend.common.NotFoundException;
 import com.jcatena.travelbackend.expense.Expense;
 import com.jcatena.travelbackend.expense.ExpenseRepository;
 import com.jcatena.travelbackend.participant.Participant;
+import com.jcatena.travelbackend.participant.ParticipantRepository;
 import com.jcatena.travelbackend.trip.dto.TripRequest;
 import com.jcatena.travelbackend.trip.dto.TripResponse;
 import com.jcatena.travelbackend.trip.dto.TripSummaryResponse;
 import com.jcatena.travelbackend.trip.dto.TripSettlementResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,10 +22,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class TripService {
 
     private final TripRepository tripRepository;
     private final ExpenseRepository expenseRepository;
+    private final ParticipantRepository participantRepository;
 
     // Crear viaje
     public TripResponse createTrip(TripRequest request) {
@@ -224,6 +228,25 @@ public class TripService {
                 .payments(payments)
                 .build();
     }
+
+    // Eliminar viaje
+    public void deleteTrip(Long id) {
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Trip not found with id: " + id));
+
+        // 1. Borrar gastos del trip
+        expenseRepository.deleteAllByTripId(id);
+
+        // 2. Borrar participantes del trip
+        participantRepository.deleteAllByTripId(id);
+
+        // 3. Borrar el trip
+        tripRepository.delete(trip);
+    }
+
+
+    // Modificar
+
 
 
 

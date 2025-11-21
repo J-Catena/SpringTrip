@@ -25,7 +25,7 @@ public class Participant {
     @Email
     private String email;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
 }

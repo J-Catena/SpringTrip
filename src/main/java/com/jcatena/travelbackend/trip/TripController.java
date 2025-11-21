@@ -42,4 +42,10 @@ public class TripController {
         return tripService.getSettlement(id);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteTrip(@PathVariable Long id) {
+        tripService.deleteTrip(id);
+    }
+
+
 }

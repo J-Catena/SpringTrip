@@ -8,6 +8,8 @@ import lombok.*;
 import com.jcatena.travelbackend.participant.Participant;
 import com.jcatena.travelbackend.expense.Expense;
 import jakarta.persistence.OneToMany;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import java.time.LocalDate;
@@ -38,9 +40,9 @@ public class Trip {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "trip")
-    private List<Participant> participants;
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participant> participants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "trip")
-    private List<Expense> expenses;
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Expense> expenses = new ArrayList<>();
 }
