@@ -2,6 +2,7 @@ package com.jcatena.travelbackend.expense;
 
 import com.jcatena.travelbackend.expense.dto.ExpenseRequest;
 import com.jcatena.travelbackend.expense.dto.ExpenseResponse;
+import com.jcatena.travelbackend.expense.dto.ExpenseUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -24,5 +25,12 @@ public class ExpenseController {
     @GetMapping
     public List<ExpenseResponse> getExpenses(@PathVariable Long tripId) {
         return expenseService.getExpensesByTrip(tripId);
+    }
+
+    @PutMapping("/{expenseId}")
+    public ExpenseResponse updateExpense(@PathVariable Long tripId,
+                                         @PathVariable Long expenseId,
+                                         @RequestBody ExpenseUpdateRequest request) {
+        return expenseService.updateExpense(tripId, expenseId, request);
     }
 }
