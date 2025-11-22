@@ -33,4 +33,10 @@ public class ExpenseController {
                                          @RequestBody ExpenseUpdateRequest request) {
         return expenseService.updateExpense(tripId, expenseId, request);
     }
+
+    @DeleteMapping("/{expenseId}")
+    public void deleteExpense(@PathVariable Long tripId,
+                              @PathVariable Long expenseId) {
+        expenseService.deleteExpense(tripId, expenseId);
+    }
 }

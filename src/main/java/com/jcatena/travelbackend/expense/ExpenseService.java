@@ -103,6 +103,18 @@ public class ExpenseService {
         return toResponse(saved);
     }
 
+    public void deleteExpense(Long tripId, Long expenseId) {
+        Expense expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new NotFoundException("Expense not found with id: " + expenseId));
+
+        // Validar que el gasto pertenece al trip correcto
+        if (!expense.getTrip().getId().equals(tripId)) {
+            throw new IllegalArgumentException("Expense does not belong to trip " + tripId);
+        }
+
+        expenseRepository.delete(expense);
+    }
+
     private ExpenseResponse toResponse(Expense expense) {
         return ExpenseResponse.builder()
                 .id(expense.getId())
