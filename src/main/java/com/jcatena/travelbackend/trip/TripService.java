@@ -40,6 +40,8 @@ public class TripService {
                 .endDate(request.getEndDate())
                 .build();
 
+        validateTripDates(trip);
+
         Trip saved = tripRepository.save(trip);
         return toResponse(saved);
     }
@@ -278,11 +280,21 @@ public class TripService {
             throw new IllegalArgumentException("startDate cannot be after endDate");
         }
 
+        validateTripDates(trip);
+
         Trip saved = tripRepository.save(trip);
         return toResponse(saved);
     }
 
 
+
+
+    private void validateTripDates(Trip trip) {
+        if (trip.getStartDate() != null && trip.getEndDate() != null
+                && trip.getStartDate().isAfter(trip.getEndDate())) {
+            throw new IllegalArgumentException("startDate cannot be after endDate");
+        }
+    }
 
 
 

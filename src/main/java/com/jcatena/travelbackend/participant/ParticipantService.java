@@ -27,7 +27,6 @@ public class ParticipantService {
 
         Participant participant = Participant.builder()
                 .name(request.getName())
-                .email(request.getEmail())
                 .trip(trip)
                 .build();
 
@@ -52,7 +51,6 @@ public class ParticipantService {
         return ParticipantResponse.builder()
                 .id(participant.getId())
                 .name(participant.getName())
-                .email(participant.getEmail())
                 .tripId(participant.getTrip().getId())
                 .build();
     }
@@ -68,10 +66,6 @@ public class ParticipantService {
 
         if (request.getName() != null) {
             participant.setName(request.getName());
-        }
-
-        if (request.getEmail() != null) {
-            participant.setEmail(request.getEmail());
         }
 
         Participant saved = participantRepository.save(participant);

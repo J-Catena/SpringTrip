@@ -2,7 +2,6 @@ package com.jcatena.travelbackend.participant;
 
 import com.jcatena.travelbackend.trip.Trip;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -21,9 +20,6 @@ public class Participant {
     @NotBlank
     @Column(nullable = false)
     private String name;
-
-    @Email
-    private String email;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -32,7 +33,7 @@ public class ExpenseService {
 
         // comprobación importante: el pagador debe pertenecer al trip
         if (!payer.getTrip().getId().equals(trip.getId())) {
-            throw new NotFoundException("Participant " + payer.getId() + " does not belong to trip " + tripId);
+            throw new IllegalArgumentException("Participant " + payer.getId() + " does not belong to trip " + tripId);
         }
 
         Expense expense = Expense.builder()
@@ -42,6 +43,9 @@ public class ExpenseService {
                 .trip(trip)
                 .payer(payer)
                 .build();
+
+        validateExpenseDateWithinTrip(trip, request.getDate());
+
 
         Expense saved = expenseRepository.save(expense);
 
@@ -85,7 +89,9 @@ public class ExpenseService {
         // date
         if (request.getDate() != null) {
             expense.setDate(request.getDate());
+            validateExpenseDateWithinTrip(expense.getTrip(), expense.getDate());
         }
+
 
         // payerId (cambiar quién paga el gasto)
         if (request.getPayerId() != null) {
@@ -103,11 +109,20 @@ public class ExpenseService {
         return toResponse(saved);
     }
 
+    private void validateExpenseDateWithinTrip(Trip trip, LocalDate expenseDate) {
+        if (expenseDate == null || trip.getStartDate() == null || trip.getEndDate() == null) {
+            return;
+        }
+
+        if (expenseDate.isBefore(trip.getStartDate()) || expenseDate.isAfter(trip.getEndDate())) {
+            throw new IllegalArgumentException("Expense date must be within trip dates");
+        }
+    }
+
     public void deleteExpense(Long tripId, Long expenseId) {
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new NotFoundException("Expense not found with id: " + expenseId));
 
-        // Validar que el gasto pertenece al trip correcto
         if (!expense.getTrip().getId().equals(tripId)) {
             throw new IllegalArgumentException("Expense does not belong to trip " + tripId);
         }

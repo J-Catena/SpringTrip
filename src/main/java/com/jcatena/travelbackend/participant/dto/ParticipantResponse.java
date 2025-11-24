@@ -13,6 +13,5 @@ public class ParticipantResponse {
 
     private Long id;
     private String name;
-    private String email;
     private Long tripId;
 }
