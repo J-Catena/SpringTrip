@@ -15,4 +15,11 @@ public class UserLoginRequest {
 
     @NotBlank
     private String password;
+
+
+    public record LoginRequest(
+            String email,
+            String password
+    ) {}
+
 }
