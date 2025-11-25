@@ -19,4 +19,5 @@ public class TripResponse {
     private String currency;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Long ownerId;
 }

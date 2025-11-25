@@ -48,6 +48,7 @@ public class TripService {
                 .currency(request.getCurrency())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
+                .owner(owner)
                 .build();
 
         validateTripDates(trip);
@@ -326,6 +327,11 @@ public class TripService {
                 .currency(trip.getCurrency())
                 .startDate(trip.getStartDate())
                 .endDate(trip.getEndDate())
+                .ownerId(
+                        trip.getOwner() != null
+                                ? trip.getOwner().getId()
+                                : null
+                )
                 .build();
     }
 }
