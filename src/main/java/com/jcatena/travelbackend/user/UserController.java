@@ -1,6 +1,5 @@
 package com.jcatena.travelbackend.user;
 
-import com.jcatena.travelbackend.user.dto.UserLoginRequest;
 import com.jcatena.travelbackend.user.dto.UserRegisterRequest;
 import com.jcatena.travelbackend.user.dto.UserResponse;
 import jakarta.validation.Valid;
@@ -8,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -17,10 +16,5 @@ public class UserController {
     @PostMapping("/register")
     public UserResponse register(@Valid @RequestBody UserRegisterRequest request) {
         return userService.register(request);
-    }
-
-    @PostMapping("/login")
-    public UserResponse login(@Valid @RequestBody UserLoginRequest request) {
-        return userService.login(request);
     }
 }

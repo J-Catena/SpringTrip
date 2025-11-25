@@ -1,6 +1,6 @@
 package com.jcatena.travelbackend.expense;
 
-import com.jcatena.travelbackend.common.NotFoundException;
+import com.jcatena.travelbackend.common.exceptions.NotFoundException;
 import com.jcatena.travelbackend.expense.dto.ExpenseRequest;
 import com.jcatena.travelbackend.expense.dto.ExpenseResponse;
 import com.jcatena.travelbackend.expense.dto.ExpenseUpdateRequest;

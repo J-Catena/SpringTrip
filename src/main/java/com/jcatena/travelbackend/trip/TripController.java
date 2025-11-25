@@ -23,14 +23,16 @@ public class TripController {
         return tripService.createTrip(request);
     }
 
+    // LISTAR SOLO LOS TRIPS DEL USUARIO AUTENTICADO
     @GetMapping
-    public List<TripResponse> getAllTrips() {
-        return tripService.getAllTrips();
+    public List<TripResponse> getMyTrips() {
+        return tripService.listTrips();
     }
 
+    // OBTENER UN TRIP DEL USUARIO AUTENTICADO
     @GetMapping("/{id}")
     public TripResponse getTrip(@PathVariable Long id) {
-        return tripService.getTripById(id);
+        return tripService.getTrip(id);
     }
 
     @GetMapping("/{id}/summary")
@@ -53,12 +55,4 @@ public class TripController {
                                    @RequestBody TripUpdateRequest request) {
         return tripService.updateTrip(id, request);
     }
-
-    @GetMapping("/user/{userId}")
-    public List<TripResponse> getTripsByUser(@PathVariable Long userId) {
-        return tripService.getTripsByUser(userId);
-    }
-
-
-
 }

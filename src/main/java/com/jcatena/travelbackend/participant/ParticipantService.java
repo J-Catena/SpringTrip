@@ -1,12 +1,11 @@
 package com.jcatena.travelbackend.participant;
 
-import com.jcatena.travelbackend.common.NotFoundException;
+import com.jcatena.travelbackend.common.exceptions.NotFoundException;
 import com.jcatena.travelbackend.participant.dto.ParticipantRequest;
 import com.jcatena.travelbackend.participant.dto.ParticipantResponse;
 import com.jcatena.travelbackend.participant.Participant;
 import com.jcatena.travelbackend.participant.ParticipantRepository;
 import com.jcatena.travelbackend.participant.dto.ParticipantUpdateRequest;
-import com.jcatena.travelbackend.common.NotFoundException;
 import com.jcatena.travelbackend.trip.Trip;
 import com.jcatena.travelbackend.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
