@@ -10,7 +10,10 @@ import com.jcatena.travelbackend.trip.dto.TripResponse;
 import com.jcatena.travelbackend.trip.dto.TripSummaryResponse;
 import com.jcatena.travelbackend.trip.dto.TripSettlementResponse;
 import com.jcatena.travelbackend.trip.dto.TripUpdateRequest;
+import com.jcatena.travelbackend.user.User;
+import com.jcatena.travelbackend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +32,16 @@ public class TripService {
     private final TripRepository tripRepository;
     private final ExpenseRepository expenseRepository;
     private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
 
     // Crear viaje
     public TripResponse createTrip(TripRequest request) {
+
+        User owner = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new NotFoundException(
+                        "User not found with id " + request.getUserId()
+                ));
+        
         Trip trip = Trip.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -60,6 +70,15 @@ public class TripService {
                 .orElseThrow(() -> new NotFoundException("Trip not found with id: " + id));
         return toResponse(trip);
     }
+
+    // Obtener viaje por Usuario
+    public List<TripResponse> getTripsByUser(Long userId) {
+        return tripRepository.findByOwnerId(userId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
 
     // Summary del viaje
     public TripSummaryResponse getSummary(Long tripId) {

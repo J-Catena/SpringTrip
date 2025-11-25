@@ -54,5 +54,11 @@ public class TripController {
         return tripService.updateTrip(id, request);
     }
 
+    @GetMapping("/user/{userId}")
+    public List<TripResponse> getTripsByUser(@PathVariable Long userId) {
+        return tripService.getTripsByUser(userId);
+    }
+
+
 
 }
