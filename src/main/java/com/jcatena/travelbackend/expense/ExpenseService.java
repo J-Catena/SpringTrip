@@ -9,6 +9,7 @@ import com.jcatena.travelbackend.participant.ParticipantRepository;
 import com.jcatena.travelbackend.trip.Trip;
 import com.jcatena.travelbackend.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,18 +25,31 @@ public class ExpenseService {
     private final TripRepository tripRepository;
     private final ParticipantRepository participantRepository;
 
-    public ExpenseResponse addExpense(Long tripId, ExpenseRequest request) {
+    // ---------- CREATE ----------
+
+    public ExpenseResponse addExpense(Long tripId, Long currentUserId, ExpenseRequest request) {
+        // 1) Cargar trip
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new NotFoundException("Trip not found with id: " + tripId));
 
+        // 2) Validar que el usuario es el owner del viaje
+        if (!trip.getOwner().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You are not the owner of this trip");
+        }
+
+        // 3) Cargar pagador
         Participant payer = participantRepository.findById(request.getPayerId())
                 .orElseThrow(() -> new NotFoundException("Participant not found with id: " + request.getPayerId()));
 
-        // comprobación importante: el pagador debe pertenecer al trip
+        // 4) Comprobar que el pagador pertenece a ese trip
         if (!payer.getTrip().getId().equals(trip.getId())) {
             throw new IllegalArgumentException("Participant " + payer.getId() + " does not belong to trip " + tripId);
         }
 
+        // 5) Validar fecha dentro del rango del viaje (si ambos existen)
+        validateExpenseDateWithinTrip(trip, request.getDate());
+
+        // 6) Construir entidad Expense
         Expense expense = Expense.builder()
                 .amount(request.getAmount())
                 .description(request.getDescription())
@@ -44,17 +58,23 @@ public class ExpenseService {
                 .payer(payer)
                 .build();
 
-        validateExpenseDateWithinTrip(trip, request.getDate());
-
-
+        // 7) Guardar
         Expense saved = expenseRepository.save(expense);
 
+        // 8) Mapear a response
         return toResponse(saved);
     }
 
-    public List<ExpenseResponse> getExpensesByTrip(Long tripId) {
-        if (!tripRepository.existsById(tripId)) {
-            throw new NotFoundException("Trip not found with id: " + tripId);
+    // ---------- READ LIST ----------
+
+    public List<ExpenseResponse> getExpensesByTrip(Long tripId, Long currentUserId) {
+        // Necesitamos el trip para comprobar owner
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new NotFoundException("Trip not found with id: " + tripId));
+
+        // Validar que el usuario es el owner
+        if (!trip.getOwner().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You are not the owner of this trip");
         }
 
         return expenseRepository.findByTripId(tripId)
@@ -63,14 +83,24 @@ public class ExpenseService {
                 .toList();
     }
 
+    // ---------- UPDATE ----------
+
     @Transactional
-    public ExpenseResponse updateExpense(Long tripId, Long expenseId, ExpenseUpdateRequest request) {
+    public ExpenseResponse updateExpense(Long tripId, Long expenseId, Long currentUserId,
+                                         ExpenseUpdateRequest request) {
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new NotFoundException("Expense not found with id: " + expenseId));
 
         // asegurar que el gasto pertenece al trip correcto
         if (!expense.getTrip().getId().equals(tripId)) {
             throw new IllegalArgumentException("Expense does not belong to trip " + tripId);
+        }
+
+        Trip trip = expense.getTrip();
+
+        // validar que el usuario es el owner del trip
+        if (!trip.getOwner().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You are not the owner of this trip");
         }
 
         // amount
@@ -88,10 +118,9 @@ public class ExpenseService {
 
         // date
         if (request.getDate() != null) {
+            validateExpenseDateWithinTrip(trip, request.getDate());
             expense.setDate(request.getDate());
-            validateExpenseDateWithinTrip(expense.getTrip(), expense.getDate());
         }
-
 
         // payerId (cambiar quién paga el gasto)
         if (request.getPayerId() != null) {
@@ -109,6 +138,27 @@ public class ExpenseService {
         return toResponse(saved);
     }
 
+    // ---------- DELETE ----------
+
+    public void deleteExpense(Long tripId, Long expenseId, Long currentUserId) {
+        Expense expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new NotFoundException("Expense not found with id: " + expenseId));
+
+        if (!expense.getTrip().getId().equals(tripId)) {
+            throw new IllegalArgumentException("Expense does not belong to trip " + tripId);
+        }
+
+        Trip trip = expense.getTrip();
+
+        if (!trip.getOwner().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You are not the owner of this trip");
+        }
+
+        expenseRepository.delete(expense);
+    }
+
+    // ---------- HELPERS ----------
+
     private void validateExpenseDateWithinTrip(Trip trip, LocalDate expenseDate) {
         if (expenseDate == null || trip.getStartDate() == null || trip.getEndDate() == null) {
             return;
@@ -117,17 +167,6 @@ public class ExpenseService {
         if (expenseDate.isBefore(trip.getStartDate()) || expenseDate.isAfter(trip.getEndDate())) {
             throw new IllegalArgumentException("Expense date must be within trip dates");
         }
-    }
-
-    public void deleteExpense(Long tripId, Long expenseId) {
-        Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new NotFoundException("Expense not found with id: " + expenseId));
-
-        if (!expense.getTrip().getId().equals(tripId)) {
-            throw new IllegalArgumentException("Expense does not belong to trip " + tripId);
-        }
-
-        expenseRepository.delete(expense);
     }
 
     private ExpenseResponse toResponse(Expense expense) {
