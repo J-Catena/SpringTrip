@@ -30,7 +30,9 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/api/users/register").permitAll()
+                        // Todo lo de auth abierto
+                        .requestMatchers("/api/auth/**", "/error").permitAll()
+                        // Todo lo demás requiere estar autenticado
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)

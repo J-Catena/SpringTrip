@@ -2,6 +2,9 @@ package com.jcatena.travelbackend.auth;
 
 import com.jcatena.travelbackend.auth.dto.AuthResponse;
 import com.jcatena.travelbackend.auth.dto.LoginRequest;
+import com.jcatena.travelbackend.user.UserService;
+import com.jcatena.travelbackend.user.dto.UserRegisterRequest;
+import com.jcatena.travelbackend.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +19,15 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserService userService;
 
+    // ----- REGISTRO -----
+    @PostMapping("/register")
+    public UserResponse register(@RequestBody UserRegisterRequest request) {
+        return userService.register(request);
+    }
+
+    // ----- LOGIN -----
     @PostMapping("/login")
     public AuthResponse login(@RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
