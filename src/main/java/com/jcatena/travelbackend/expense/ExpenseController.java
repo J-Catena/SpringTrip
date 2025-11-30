@@ -1,15 +1,10 @@
 package com.jcatena.travelbackend.expense;
 
-import com.jcatena.travelbackend.common.exceptions.NotFoundException;
 import com.jcatena.travelbackend.expense.dto.ExpenseRequest;
 import com.jcatena.travelbackend.expense.dto.ExpenseResponse;
 import com.jcatena.travelbackend.expense.dto.ExpenseUpdateRequest;
-import com.jcatena.travelbackend.user.User;
-import com.jcatena.travelbackend.user.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,52 +15,36 @@ import java.util.List;
 public class ExpenseController {
 
     private final ExpenseService expenseService;
-    private final UserRepository userRepository;
-
-    private Long getCurrentUserId(UserDetails principal) {
-        String email = principal.getUsername();  // lo que usas para logearte
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User not found with email: " + email));
-        return user.getId();
-    }
 
     @PostMapping
     public ExpenseResponse addExpense(
             @PathVariable Long tripId,
-            @AuthenticationPrincipal UserDetails principal,
             @RequestBody @Valid ExpenseRequest request
     ) {
-        Long userId = getCurrentUserId(principal);
-        return expenseService.addExpense(tripId, userId, request);
+        return expenseService.addExpense(tripId, request);
     }
 
     @GetMapping
     public List<ExpenseResponse> getExpenses(
-            @PathVariable Long tripId,
-            @AuthenticationPrincipal UserDetails principal
+            @PathVariable Long tripId
     ) {
-        Long userId = getCurrentUserId(principal);
-        return expenseService.getExpensesByTrip(tripId, userId);
+        return expenseService.getExpensesByTrip(tripId);
     }
 
     @PutMapping("/{expenseId}")
     public ExpenseResponse updateExpense(
             @PathVariable Long tripId,
             @PathVariable Long expenseId,
-            @AuthenticationPrincipal UserDetails principal,
             @RequestBody @Valid ExpenseUpdateRequest request
     ) {
-        Long userId = getCurrentUserId(principal);
-        return expenseService.updateExpense(tripId, expenseId, userId, request);
+        return expenseService.updateExpense(tripId, expenseId, request);
     }
 
     @DeleteMapping("/{expenseId}")
     public void deleteExpense(
             @PathVariable Long tripId,
-            @PathVariable Long expenseId,
-            @AuthenticationPrincipal UserDetails principal
+            @PathVariable Long expenseId
     ) {
-        Long userId = getCurrentUserId(principal);
-        expenseService.deleteExpense(tripId, expenseId, userId);
+        expenseService.deleteExpense(tripId, expenseId);
     }
 }

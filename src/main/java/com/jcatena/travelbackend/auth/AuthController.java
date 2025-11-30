@@ -13,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -21,13 +21,11 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserService userService;
 
-    // ----- REGISTRO -----
     @PostMapping("/register")
     public UserResponse register(@RequestBody UserRegisterRequest request) {
         return userService.register(request);
     }
 
-    // ----- LOGIN -----
     @PostMapping("/login")
     public AuthResponse login(@RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
