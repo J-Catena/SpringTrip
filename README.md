@@ -1,139 +1,186 @@
-```md
-# SpringTrip — Travel & Expense Management Backend
+# SpringTrip — Backend for Group Trip & Shared Expense Management
 
-SpringTrip is a backend system built with **Java** and **Spring Boot**, designed to manage group trips and shared expenses.  
-The goal of the project is to build a clean, scalable architecture for handling trips, participants, expenses, and balance summaries.
+SpringTrip is a **secure backend API** built with **Java + Spring Boot**, designed to manage group trips, participants and shared expenses, including automatic balance calculation (summary) and settlement (who pays whom).
 
-This repository contains the backend API that will power the full-stack application.
+This backend powers the future full-stack application (Next.js frontend).
 
 ---
 
-## 🚀 Features
+# 🚀 Features
 
-- Create and manage **Trips**
-- Add / delete **Participants**
-- Add / delete **Expenses**
-- REST API with modular architecture
-- Controller → Service → Repository → Domain structure
-- SQL persistence using Spring Data JPA
+### 🔐 Authentication & Security
+- User registration & login
+- JWT-based stateless authentication
+- Ownership-based authorization (each trip belongs to exactly one user)
+- Protected endpoints for trips, participants, expenses, summary & settlement
+
+### ✈️ Trips
+- Create, list, update and delete trips
+- Trips are always linked to the authenticated user (owner)
+
+### 👥 Participants
+- Add/update/delete participants inside a trip
+- A participant belongs to exactly one trip
+
+### 💸 Expenses
+- Add/update/delete expenses
+- Validation: payer must be a participant of the trip
+- Date validation inside the trip's range
+
+### 📊 Summary & Settlement
+- Summary: total paid per participant + balance (positive = must receive, negative = must pay)
+- Settlement: minimal set of payments required to settle the trip
 
 ---
 
-## 🧱 Tech Stack
+# 🧱 Tech Stack
 
-- **Java 17+**
-- **Spring Boot**
+- **Java 21**
+- **Spring Boot 3**
 - **Spring Web**
-- **Spring Data JPA**
-- **Hibernate**
-- **H2** (dev) / **PostgreSQL** (future)
+- **Spring Security + JWT**
+- **Spring Data JPA / Hibernate**
+- **H2 Database (dev)**
 - **Maven**
-- **JUnit** (upcoming)
-- **Docker** (upcoming)
+- **Lombok**
+
+Testing:
+- **JUnit 5**
+- **Mockito** (service tests)
+
+Documentation:
+- `docs/api.md` — full endpoint reference
+- Postman collection included
 
 ---
 
-## 📁 Project Structure
+# 📂 Project Structure
 
-```
 src/main/java/com/jcatena/travelbackend
 │
+├── auth
+│ ├── AuthController.java
+│ ├── JwtService.java
+│ ├── JwtAuthenticationFilter.java
+│ └── SecurityConfig.java
+│
+├── user
+│ ├── User.java
+│ ├── UserRepository.java
+│ └── UserService.java
+│
 ├── trip
-│   ├── TripController.java
-│   ├── TripService.java
-│   ├── TripRepository.java
-│   └── dto
-│       ├── TripRequest.java
-│       ├── TripResponse.java
+│ ├── TripController.java
+│ ├── TripService.java
+│ ├── TripRepository.java
+│ └── dto/
 │
 ├── participant
-│   ├── ParticipantController.java
-│   ├── ParticipantService.java
-│   ├── ParticipantRepository.java
-│   └── dto
-│       ├── ParticipantRequest.java
+│ ├── ParticipantController.java
+│ ├── ParticipantService.java
+│ ├── ParticipantRepository.java
+│ └── dto/
 │
 ├── expense
-│   ├── ExpenseController.java
-│   ├── ExpenseService.java
-│   ├── ExpenseRepository.java
-│   └── dto
-│       ├── ExpenseRequest.java
+│ ├── ExpenseController.java
+│ ├── ExpenseService.java
+│ ├── ExpenseRepository.java
+│ └── dto/
 │
-└── shared
-    ├── ApiResponse.java
-    ├── exceptions
-    └── utils
-```
+├── common
+│ └── exceptions/
+│
+└── docs
+└── api.md
+
 
 ---
 
-## 📡 API Endpoints (current)
+# 📡 API Documentation
 
-### **Trips**
-```
-POST   /api/trips
-GET    /api/trips/{id}
-DELETE /api/trips/{id}
-```
+Complete endpoint documentation is available at:  
+`docs/api.md`
 
-### **Participants**
-```
-POST   /api/trips/{tripId}/participants
-DELETE /api/participants/{id}
-```
+You will find:
 
-### **Expenses**
-```
-POST   /api/trips/{tripId}/expenses
-DELETE /api/expenses/{id}
-```
+- Auth (register, login)
+- Trips CRUD
+- Participants CRUD
+- Expenses CRUD
+- Summary
+- Settlement
+- Request/response examples
+- Status codes
+- Usage notes
 
-More endpoints will be added as the system evolves.
+A Postman collection is also included in `/postman/`.
 
 ---
 
-## ▶️ Running the Project
+# ▶️ Running the Project
 
-```
+Clone the repository:
+
+```sh
 git clone https://github.com/J-Catena/SpringTrip.git
 cd SpringTrip
+Run the application:
+
+sh
+Copiar código
 ./mvnw spring-boot:run
-```
+The API will start at:
 
-The app runs at:
-
-```
+arduino
+Copiar código
 http://localhost:8080
-```
+Use Postman to register, login, and test all secured endpoints with the generated JWT token.
 
----
+✔️ Backend Status
+Completed:
 
-## 🧪 Upcoming Work
+JWT authentication
 
-- PUT endpoints for updating trip/participant/expense  
-- Expense summary calculation  
-- JUnit tests  
-- Docker containerization  
-- Deployment on Render/Railway  
+All CRUD operations (Trips, Participants, Expenses)
 
----
+Summary & Settlement logic
 
-## 🎯 Project Goal
+Service-level tests
 
-SpringTrip serves as a **real-world backend portfolio project**, showcasing:
+Full API documentation (api.md)
 
-- Solid Java + Spring Boot foundations  
-- Domain-driven design  
-- Clean API architecture  
-- Realistic business logic  
-- Production-ready backend structure  
+Postman Collection
 
----
+CORS ready for frontend (http://localhost:3000)
 
-## 📬 Author
+Next steps:
 
-**Juan Catena — Backend Developer**  
-Portfolio: https://juancatena.vercel.app  
+Frontend with Next.js + TypeScript
+
+Deploy backend (Railway / Render)
+
+CI/CD (optional)
+
+Integration tests (optional)
+
+🎯 Project Purpose
+SpringTrip is a portfolio-grade backend system designed to demonstrate:
+
+Real authentication & authorization
+
+Clean, layered architecture
+
+Domain-driven logic
+
+Professional API design
+
+Testable and extendable backend
+
+Ability to build production-ready systems
+
+This is not a demo API — it's the backend of a real application.
+
+👤 Author
+Juan Catena — Backend Developer (Java · Spring Boot)
+Portfolio: https://juancatena.vercel.app
 LinkedIn: https://www.linkedin.com/in/juan-catena-marin
-```
