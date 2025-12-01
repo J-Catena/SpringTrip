@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getTrips, Trip, ApiError } from "@/lib/api/trips";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -38,7 +39,7 @@ export default function DashboardPage() {
 
         if (err instanceof ApiError) {
           if (err.status === 401 || err.status === 403) {
-            // Sesión caducada o no autorizada → limpiamos y al login
+            // Sesión caducada o no autorizada, volvemos al login
             localStorage.removeItem("authToken");
             router.replace("/login");
             return;
@@ -73,9 +74,7 @@ export default function DashboardPage() {
       </header>
 
       <section className="p-6 max-w-4xl mx-auto">
-        <h2 className="text-base font-semibold mb-2">
-          Tus viajes
-        </h2>
+        <h2 className="text-base font-semibold mb-2">Tus viajes</h2>
         <p className="text-sm text-slate-400 mb-4">
           Esta lista viene directamente del backend protegido con JWT.
         </p>
@@ -99,21 +98,23 @@ export default function DashboardPage() {
         {!loading && trips.length > 0 && (
           <ul className="space-y-3">
             {trips.map((trip) => (
-              <li
-                key={trip.id}
-                className="border border-slate-800 rounded-xl px-4 py-3 bg-slate-900"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold">{trip.name}</p>
+              <li key={trip.id}>
+                <Link
+                  href={`/trips/${trip.id}`}
+                  className="block border border-slate-800 rounded-xl px-4 py-3 bg-slate-900 hover:bg-slate-800 transition"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold">{trip.name}</p>
+                      <p className="text-xs text-slate-400">
+                        {trip.destination}
+                      </p>
+                    </div>
                     <p className="text-xs text-slate-400">
-                      {trip.destination}
+                      {trip.startDate} — {trip.endDate}
                     </p>
                   </div>
-                  <p className="text-xs text-slate-400">
-                    {trip.startDate} — {trip.endDate}
-                  </p>
-                </div>
+                </Link>
               </li>
             ))}
           </ul>
