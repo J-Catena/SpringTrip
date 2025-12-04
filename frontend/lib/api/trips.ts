@@ -1,4 +1,3 @@
-
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
@@ -10,6 +9,41 @@ export interface Trip {
   endDate: string;
 }
 
+// Crear viaje
+export interface CreateTripRequest {
+  name: string;
+  destination: string;
+  startDate: string; // "YYYY-MM-DD"
+  endDate: string;   // "YYYY-MM-DD"
+  currency: string;  // p.ej. "EUR"
+}
+
+// Participante
+export interface Participant {
+  id: number;
+  name: string;
+}
+
+export interface CreateParticipantRequest {
+  name: string;
+}
+
+// Gasto
+export interface CreateExpenseRequest {
+  amount: number;
+  description?: string;
+  date: string; // "YYYY-MM-DD"
+  payerId: number;
+}
+
+export interface Expense {
+  id: number;
+  amount: number;
+  description: string;
+  date: string;
+  payerId: number;
+}
+
 export class ApiError extends Error {
   status: number;
 
@@ -18,6 +52,8 @@ export class ApiError extends Error {
     this.status = status;
   }
 }
+
+// -------- Trips --------
 
 export async function getTrips(token: string): Promise<Trip[]> {
   const response = await fetch(`${API_BASE_URL}/api/trips`, {
@@ -34,7 +70,9 @@ export async function getTrips(token: string): Promise<Trip[]> {
     try {
       const data = (await response.json()) as { message?: string };
       if (data.message) message = data.message;
-    } catch {}
+    } catch {
+      // ignoramos errores de parseo
+    }
 
     throw new ApiError(message, response.status);
   }
@@ -43,7 +81,57 @@ export async function getTrips(token: string): Promise<Trip[]> {
   return data;
 }
 
-// Summary
+export async function createTrip(
+  body: CreateTripRequest,
+  token: string,
+): Promise<Trip> {
+  const response = await fetch(`${API_BASE_URL}/api/trips`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    let message = "Error al crear el viaje";
+
+    try {
+      const text = await response.text();
+      console.log("Respuesta 400 createTrip:", text);
+
+      try {
+        const data = JSON.parse(text) as {
+          message?: string;
+          error?: string;
+          errors?: unknown;
+        };
+
+        if (data.message) {
+          message = data.message;
+        } else if (data.error) {
+          message = data.error;
+        } else if (data.errors) {
+          message = "Error de validación en los datos del viaje.";
+        }
+      } catch {
+        if (text) {
+          message = text;
+        }
+      }
+    } catch {
+      // dejamos el mensaje por defecto
+    }
+
+    throw new ApiError(message, response.status);
+  }
+
+  const data = (await response.json()) as Trip;
+  return data;
+}
+
+// -------- Summary --------
 
 export interface TripSummaryParticipant {
   id: number;
@@ -59,7 +147,7 @@ export interface TripSummary {
   participants: TripSummaryParticipant[];
 }
 
-// Settlement
+// -------- Settlement --------
 
 export interface TripPayment {
   payerId: number;
@@ -77,7 +165,7 @@ export interface TripSettlement {
 
 export async function getTripSummary(
   tripId: number,
-  token: string
+  token: string,
 ): Promise<TripSummary> {
   const response = await fetch(
     `${API_BASE_URL}/api/trips/${tripId}/summary`,
@@ -87,7 +175,7 @@ export async function getTripSummary(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -107,7 +195,7 @@ export async function getTripSummary(
 
 export async function getTripSettlement(
   tripId: number,
-  token: string
+  token: string,
 ): Promise<TripSettlement> {
   const response = await fetch(
     `${API_BASE_URL}/api/trips/${tripId}/settlement`,
@@ -117,7 +205,7 @@ export async function getTripSettlement(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -132,5 +220,73 @@ export async function getTripSettlement(
   }
 
   const data = (await response.json()) as TripSettlement;
+  return data;
+}
+
+// -------- Participants --------
+
+export async function createParticipant(
+  tripId: number,
+  body: CreateParticipantRequest,
+  token: string,
+): Promise<Participant> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/trips/${tripId}/participants`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!response.ok) {
+    let message = "Error al crear el participante";
+
+    try {
+      const data = (await response.json()) as { message?: string };
+      if (data.message) message = data.message;
+    } catch {}
+
+    throw new ApiError(message, response.status);
+  }
+
+  const data = (await response.json()) as Participant;
+  return data;
+}
+
+// -------- Expenses --------
+
+export async function createExpense(
+  tripId: number,
+  body: CreateExpenseRequest,
+  token: string,
+): Promise<Expense> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/trips/${tripId}/expenses`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!response.ok) {
+    let message = "Error al crear el gasto";
+
+    try {
+      const data = (await response.json()) as { message?: string };
+      if (data.message) message = data.message;
+    } catch {}
+
+    throw new ApiError(message, response.status);
+  }
+
+  const data = (await response.json()) as Expense;
   return data;
 }

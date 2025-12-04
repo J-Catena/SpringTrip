@@ -2,44 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getTrips, Trip, ApiError } from "@/lib/api/trips";
 import Link from "next/link";
+import { getTrips, Trip, ApiError } from "@/lib/api/trips";
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const router = useRouter();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-
-    if (!storedToken) {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
       router.replace("/login");
       return;
     }
 
-    setToken(storedToken);
-  }, [router]);
-
-  useEffect(() => {
-    if (!token) return;
-
     const loadTrips = async () => {
-      setLoading(true);
-      setError(null);
-
       try {
+        setLoading(true);
+        setError(null);
         const data = await getTrips(token);
         setTrips(data);
       } catch (err) {
-        console.error("Error cargando trips:", err);
-
         if (err instanceof ApiError) {
           if (err.status === 401 || err.status === 403) {
-            // Sesión caducada o no autorizada, volvemos al login
             localStorage.removeItem("authToken");
             router.replace("/login");
             return;
@@ -54,7 +41,7 @@ export default function DashboardPage() {
     };
 
     void loadTrips();
-  }, [token, router]);
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -65,12 +52,20 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-slate-950 text-slate-50">
       <header className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">SpringTrip · Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="text-xs px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
-        >
-          Cerrar sesión
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/trips/new"
+            className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400 transition"
+          >
+            Nuevo viaje
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="text-xs px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </header>
 
       <section className="p-6 max-w-4xl mx-auto">
@@ -95,7 +90,7 @@ export default function DashboardPage() {
           </p>
         )}
 
-        {!loading && trips.length > 0 && (
+        {!loading && !error && trips.length > 0 && (
           <ul className="space-y-3">
             {trips.map((trip) => (
               <li key={trip.id}>
