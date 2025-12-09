@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/lib/utils/format";
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -122,9 +123,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
           router.replace("/login");
           return;
         } else {
-          setParticipantError(
-            err.message || "Error al crear el participante.",
-          );
+          setParticipantError(err.message || "Error al crear el participante.");
         }
       } else {
         setParticipantError("Error inesperado al crear el participante.");
@@ -165,7 +164,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
           date: expenseDate,
           payerId: expensePayer,
         },
-        token,
+        token
       );
 
       // limpiar formulario
@@ -219,6 +218,8 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
     );
   }
 
+  const hasParticipants = summary.participants.length > 0;
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-50">
       <header className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
@@ -245,37 +246,43 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
             <p className="text-xs text-slate-400 mb-4">
               Total del viaje:{" "}
               <span className="font-semibold text-slate-100">
-                {summary.totalAmount.toFixed(2)} €
+                {formatCurrency(summary.totalAmount)}
               </span>
             </p>
 
-            <ul className="space-y-2">
-              {summary.participants.map((p) => (
-                <li
-                  key={p.id}
-                  className="flex items-center justify-between text-xs bg-slate-950 rounded-xl px-3 py-2"
-                >
-                  <div>
-                    <p className="font-medium">{p.name}</p>
-                    <p className="text-slate-400">
-                      Pagado: {p.totalPaid.toFixed(2)} €
-                    </p>
-                  </div>
-                  <p
-                    className={
-                      "font-semibold " +
-                      (p.balance < 0
-                        ? "text-red-400"
-                        : p.balance > 0
-                        ? "text-emerald-400"
-                        : "text-slate-300")
-                    }
+            {summary.participants.length === 0 ? (
+              <p className="text-xs text-slate-400">
+                Este viaje todavía no tiene participantes.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {summary.participants.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between text-xs bg-slate-950 rounded-xl px-3 py-2"
                   >
-                    {p.balance.toFixed(2)} €
-                  </p>
-                </li>
-              ))}
-            </ul>
+                    <div>
+                      <p className="font-medium">{p.name}</p>
+                      <p className="text-slate-400">
+                        Pagado: {formatCurrency(p.totalPaid)}
+                      </p>
+                    </div>
+                    <p
+                      className={
+                        "font-semibold " +
+                        (p.balance < 0
+                          ? "text-red-400"
+                          : p.balance > 0
+                          ? "text-emerald-400"
+                          : "text-slate-300")
+                      }
+                    >
+                      {formatCurrency(p.balance)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Formulario para añadir participante */}
@@ -317,58 +324,65 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
           <div className="border border-slate-800 rounded-2xl bg-slate-900 p-4">
             <h2 className="text-sm font-semibold mb-2">Añadir gasto</h2>
 
-            <form onSubmit={handleAddExpense} className="space-y-3 text-xs">
-              <input
-                type="number"
-                step="0.01"
-                value={expenseAmount}
-                onChange={(e) => setExpenseAmount(e.target.value)}
-                placeholder="Importe (€)"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 focus:ring-2 focus:ring-emerald-500"
-              />
+            {!hasParticipants ? (
+              <p className="text-xs text-slate-400">
+                Primero añade al menos un participante para poder registrar
+                gastos.
+              </p>
+            ) : (
+              <form onSubmit={handleAddExpense} className="space-y-3 text-xs">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={expenseAmount}
+                  onChange={(e) => setExpenseAmount(e.target.value)}
+                  placeholder="Importe"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 focus:ring-2 focus:ring-emerald-500"
+                />
 
-              <input
-                type="text"
-                value={expenseDescription}
-                onChange={(e) => setExpenseDescription(e.target.value)}
-                placeholder="Descripción (opcional)"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 focus:ring-2 focus:ring-emerald-500"
-              />
+                <input
+                  type="text"
+                  value={expenseDescription}
+                  onChange={(e) => setExpenseDescription(e.target.value)}
+                  placeholder="Descripción (opcional)"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 focus:ring-2 focus:ring-emerald-500"
+                />
 
-              <input
-                type="date"
-                value={expenseDate}
-                onChange={(e) => setExpenseDate(e.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 focus:ring-2 focus:ring-emerald-500"
-              />
+                <input
+                  type="date"
+                  value={expenseDate}
+                  onChange={(e) => setExpenseDate(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 focus:ring-2 focus:ring-emerald-500"
+                />
 
-              <select
-                value={expensePayer ?? ""}
-                onChange={(e) => setExpensePayer(Number(e.target.value))}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50"
-              >
-                <option value="">Selecciona pagador</option>
-                {summary.participants.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                <select
+                  value={expensePayer ?? ""}
+                  onChange={(e) => setExpensePayer(Number(e.target.value))}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50"
+                >
+                  <option value="">Selecciona pagador</option>
+                  {summary.participants.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
 
-              {expenseError && (
-                <p className="text-xs text-red-400 bg-red-950/40 border border-red-900 px-3 py-2 rounded-lg">
-                  {expenseError}
-                </p>
-              )}
+                {expenseError && (
+                  <p className="text-xs text-red-400 bg-red-950/40 border border-red-900 px-3 py-2 rounded-lg">
+                    {expenseError}
+                  </p>
+                )}
 
-              <button
-                type="submit"
-                disabled={expenseLoading}
-                className="w-full rounded-lg bg-emerald-500 text-slate-950 font-medium py-2.5 hover:bg-emerald-400 disabled:opacity-70"
-              >
-                {expenseLoading ? "Añadiendo gasto..." : "Añadir gasto"}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={expenseLoading}
+                  className="w-full rounded-lg bg-emerald-500 text-slate-950 font-medium py-2.5 hover:bg-emerald-400 disabled:opacity-70"
+                >
+                  {expenseLoading ? "Añadiendo gasto..." : "Añadir gasto"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
@@ -392,7 +406,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
                     <span className="font-semibold">{pay.receiverName}</span>
                   </span>
                   <span className="font-semibold text-emerald-400">
-                    {pay.amount.toFixed(2)} €
+                    {formatCurrency(pay.amount)}
                   </span>
                 </li>
               ))}
