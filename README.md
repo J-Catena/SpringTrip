@@ -3,8 +3,6 @@ Full-stack application to manage shared travel expenses
 
 ---
 
-# 🇪🇸 Descripción en Español
-
 **SpringTrip** es una aplicación **full-stack** diseñada para gestionar gastos compartidos en viajes de forma sencilla y clara.
 
 Permite:
