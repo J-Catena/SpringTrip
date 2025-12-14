@@ -1,47 +1,27 @@
 "use client";
 
 import { formatCurrency } from "@/lib/utils/format";
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import {
   getTripSummary,
   getTripSettlement,
   TripSummary,
   TripSettlement,
-  ApiError,
   createParticipant,
   createExpense,
 } from "@/lib/api/trips";
+import { ApiError } from "@/lib/api/client";
+import { clearToken, getToken } from "@/lib/auth";
 
-interface TripDetailPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default function TripDetailPage({ params }: TripDetailPageProps) {
-  const { id } = use(params);
-  const tripId = Number(id);
+export default function TripDetailPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
 
-  const [summary, setSummary] = useState<TripSummary | null>(null);
-  const [settlement, setSettlement] = useState<TripSettlement | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const id = params?.id;
+  const tripId = Number(id);
 
-  const [token, setToken] = useState<string | null>(null);
-
-  // Estado del formulario de participante
-  const [participantName, setParticipantName] = useState("");
-  const [participantError, setParticipantError] = useState<string | null>(null);
-  const [participantLoading, setParticipantLoading] = useState(false);
-
-  // Estado del formulario de gasto
-  const [expenseAmount, setExpenseAmount] = useState("");
-  const [expenseDescription, setExpenseDescription] = useState("");
-  const [expenseDate, setExpenseDate] = useState("");
-  const [expensePayer, setExpensePayer] = useState<number | null>(null);
-  const [expenseError, setExpenseError] = useState<string | null>(null);
-  const [expenseLoading, setExpenseLoading] = useState(false);
-
+  // Blindaje total del id
   if (!id || Number.isNaN(tripId)) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-950 text-red-400">
@@ -49,6 +29,25 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
       </main>
     );
   }
+
+  const [summary, setSummary] = useState<TripSummary | null>(null);
+  const [settlement, setSettlement] = useState<TripSettlement | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  // Participantes
+  const [participantName, setParticipantName] = useState("");
+  const [participantError, setParticipantError] = useState<string | null>(null);
+  const [participantLoading, setParticipantLoading] = useState(false);
+
+  // Gastos
+  const [expenseAmount, setExpenseAmount] = useState("");
+  const [expenseDescription, setExpenseDescription] = useState("");
+  const [expenseDate, setExpenseDate] = useState("");
+  const [expensePayer, setExpensePayer] = useState<number | null>(null);
+  const [expenseError, setExpenseError] = useState<string | null>(null);
+  const [expenseLoading, setExpenseLoading] = useState(false);
 
   const loadData = async (authToken: string) => {
     try {
@@ -67,7 +66,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
 
       if (err instanceof ApiError) {
         if (err.status === 401 || err.status === 403) {
-          localStorage.removeItem("authToken");
+          clearToken();
           router.replace("/login");
           return;
         }
@@ -81,7 +80,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
   };
 
   useEffect(() => {
-    const authToken = localStorage.getItem("authToken");
+    const authToken = getToken();
     if (!authToken) {
       router.replace("/login");
       return;
@@ -92,7 +91,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
   }, [tripId, router]);
 
   const handleBack = () => {
-    router.push("/dashboard");
+    router.push("/trips");
   };
 
   const handleAddParticipant = async (e: React.FormEvent) => {
@@ -119,7 +118,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
         if (err.status === 400) {
           setParticipantError(err.message || "Datos inválidos.");
         } else if (err.status === 401 || err.status === 403) {
-          localStorage.removeItem("authToken");
+          clearToken();
           router.replace("/login");
           return;
         } else {
@@ -137,7 +136,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
     e.preventDefault();
     setExpenseError(null);
 
-    if (!expenseAmount || !expenseDate || !expensePayer) {
+    if (!expenseAmount || !expenseDate || expensePayer === null) {
       setExpenseError("Importe, fecha y pagador son obligatorios.");
       return;
     }
@@ -167,20 +166,18 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
         token
       );
 
-      // limpiar formulario
       setExpenseAmount("");
       setExpenseDescription("");
       setExpenseDate("");
       setExpensePayer(null);
 
-      // recargar summary + settlement
       await loadData(token);
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 400) {
           setExpenseError(err.message || "Datos inválidos.");
         } else if (err.status === 401 || err.status === 403) {
-          localStorage.removeItem("authToken");
+          clearToken();
           router.replace("/login");
           return;
         } else {
@@ -212,7 +209,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
           onClick={handleBack}
           className="text-xs px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
         >
-          Volver al dashboard
+          Volver a viajes
         </button>
       </main>
     );
@@ -238,7 +235,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
       </header>
 
       <section className="p-6 max-w-5xl mx-auto grid gap-6 md:grid-cols-[2fr,1.5fr]">
-        {/* Columna izquierda: resumen, participantes, gastos */}
+        {/* Columna izquierda */}
         <div className="space-y-4">
           {/* Resumen */}
           <div className="border border-slate-800 rounded-2xl bg-slate-900 p-4">
@@ -285,12 +282,11 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
             )}
           </div>
 
-          {/* Formulario para añadir participante */}
+          {/* Añadir participante */}
           <div className="border border-slate-800 rounded-2xl bg-slate-900 p-4">
             <h2 className="text-sm font-semibold mb-2">Añadir participante</h2>
             <p className="text-xs text-slate-400 mb-3">
-              Solo necesitas el nombre por ahora. Más adelante podrás gestionar
-              emails u otros datos.
+              Solo necesitas el nombre por ahora.
             </p>
 
             <form onSubmit={handleAddParticipant} className="space-y-3">
@@ -313,21 +309,18 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
                 disabled={participantLoading}
                 className="text-xs px-3 py-2 rounded-lg bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400 disabled:opacity-70 disabled:cursor-not-allowed transition"
               >
-                {participantLoading
-                  ? "Añadiendo participante..."
-                  : "Añadir participante"}
+                {participantLoading ? "Añadiendo..." : "Añadir participante"}
               </button>
             </form>
           </div>
 
-          {/* Formulario para añadir gasto */}
+          {/* Añadir gasto */}
           <div className="border border-slate-800 rounded-2xl bg-slate-900 p-4">
             <h2 className="text-sm font-semibold mb-2">Añadir gasto</h2>
 
             {!hasParticipants ? (
               <p className="text-xs text-slate-400">
-                Primero añade al menos un participante para poder registrar
-                gastos.
+                Primero añade al menos un participante.
               </p>
             ) : (
               <form onSubmit={handleAddExpense} className="space-y-3 text-xs">
@@ -379,7 +372,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
                   disabled={expenseLoading}
                   className="w-full rounded-lg bg-emerald-500 text-slate-950 font-medium py-2.5 hover:bg-emerald-400 disabled:opacity-70"
                 >
-                  {expenseLoading ? "Añadiendo gasto..." : "Añadir gasto"}
+                  {expenseLoading ? "Añadiendo..." : "Añadir gasto"}
                 </button>
               </form>
             )}
@@ -401,8 +394,7 @@ export default function TripDetailPage({ params }: TripDetailPageProps) {
                   className="bg-slate-950 rounded-xl px-3 py-2 flex justify-between gap-3"
                 >
                   <span>
-                    <span className="font-semibold">{pay.payerName}</span> debe
-                    pagar a{" "}
+                    <span className="font-semibold">{pay.payerName}</span> debe pagar a{" "}
                     <span className="font-semibold">{pay.receiverName}</span>
                   </span>
                   <span className="font-semibold text-emerald-400">

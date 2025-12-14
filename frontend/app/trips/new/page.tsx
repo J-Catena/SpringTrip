@@ -2,7 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createTrip, CreateTripRequest, ApiError } from "@/lib/api/trips";
+import { createTrip, CreateTripRequest } from "@/lib/api/trips";
+import { ApiError } from "@/lib/api/client";
+import { clearToken, getToken } from "@/lib/auth";
 
 export default function NewTripPage() {
   const router = useRouter();
@@ -28,13 +30,7 @@ export default function NewTripPage() {
     e.preventDefault();
     setError(null);
 
-    if (
-      !form.name ||
-      !form.destination ||
-      !form.startDate ||
-      !form.endDate ||
-      !form.currency
-    ) {
+    if (!form.name || !form.destination || !form.startDate || !form.endDate || !form.currency) {
       setError("Todos los campos son obligatorios.");
       return;
     }
@@ -44,7 +40,7 @@ export default function NewTripPage() {
       return;
     }
 
-    const token = localStorage.getItem("authToken");
+    const token = getToken();
     if (!token) {
       router.replace("/login");
       return;
@@ -59,7 +55,7 @@ export default function NewTripPage() {
         if (err.status === 400) {
           setError(err.message || "Datos inválidos al crear el viaje.");
         } else if (err.status === 401 || err.status === 403) {
-          localStorage.removeItem("authToken");
+          clearToken();
           router.replace("/login");
           return;
         } else {
@@ -74,7 +70,7 @@ export default function NewTripPage() {
   };
 
   const handleCancel = () => {
-    router.push("/dashboard");
+    router.push("/trips");
   };
 
   return (
@@ -96,10 +92,7 @@ export default function NewTripPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-slate-200 mb-1"
-            >
+            <label htmlFor="name" className="block text-sm font-medium text-slate-200 mb-1">
               Nombre
             </label>
             <input
@@ -113,10 +106,7 @@ export default function NewTripPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="destination"
-              className="block text-sm font-medium text-slate-200 mb-1"
-            >
+            <label htmlFor="destination" className="block text-sm font-medium text-slate-200 mb-1">
               Destino
             </label>
             <input
@@ -131,10 +121,7 @@ export default function NewTripPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="startDate"
-                className="block text-sm font-medium text-slate-200 mb-1"
-              >
+              <label htmlFor="startDate" className="block text-sm font-medium text-slate-200 mb-1">
                 Fecha de inicio
               </label>
               <input
@@ -147,10 +134,7 @@ export default function NewTripPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="endDate"
-                className="block text-sm font-medium text-slate-200 mb-1"
-              >
+              <label htmlFor="endDate" className="block text-sm font-medium text-slate-200 mb-1">
                 Fecha de fin
               </label>
               <input
@@ -164,10 +148,7 @@ export default function NewTripPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="currency"
-              className="block text-sm font-medium text-slate-200 mb-1"
-            >
+            <label htmlFor="currency" className="block text-sm font-medium text-slate-200 mb-1">
               Moneda
             </label>
             <select
@@ -178,7 +159,6 @@ export default function NewTripPage() {
             >
               <option value="EUR">EUR (€)</option>
               <option value="USD">USD ($)</option>
-              
             </select>
           </div>
 

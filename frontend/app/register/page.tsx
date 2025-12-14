@@ -2,23 +2,31 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/api/auth";
+import { register, login } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { saveToken } from "@/lib/auth";
 
 interface FormState {
+  name: string;
   email: string;
   password: string;
 }
 
-export default function LoginPage() {
-  const [form, setForm] = useState<FormState>({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function RegisterPage() {
   const router = useRouter();
 
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const handleChange =
-    (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
     };
 
@@ -26,29 +34,38 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
 
-    if (!form.email || !form.password) {
-      setError("Email y contraseña son obligatorios.");
+    if (!form.name.trim() || !form.email.trim() || !form.password) {
+      setError("Nombre, email y contraseña son obligatorios.");
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
     setLoading(true);
     try {
-      const data = await login({
+      // 1) Crear usuario
+      await register(form.name.trim(), form.email.trim(), form.password);
+
+      // 2) Login automático
+      const { token } = await login({
         email: form.email.trim(),
         password: form.password,
       });
 
-      saveToken(data.token);
-
+      saveToken(token);
       router.push("/trips");
     } catch (err) {
-      console.error("ERROR EN LOGIN:", err);
+      console.error("ERROR EN REGISTER:", err);
 
       if (err instanceof ApiError) {
-        if (err.status === 401) setError("Credenciales incorrectas.");
-        else setError(err.message || "Error al iniciar sesión.");
+        if (err.status === 400) setError(err.message || "Datos inválidos.");
+        else if (err.status === 409) setError("Ese email ya está registrado.");
+        else setError(err.message || "Error al registrarse.");
       } else {
-        setError("Error inesperado. Revisa la consola del navegador.");
+        setError("Error inesperado. Revisa la consola.");
       }
     } finally {
       setLoading(false);
@@ -62,21 +79,29 @@ export default function LoginPage() {
           SpringTrip
         </h1>
         <p className="text-sm text-slate-400 mb-6 text-center">
-          Inicia sesión para gestionar tus viajes y gastos compartidos.
+          Crea tu cuenta para empezar.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-slate-200 mb-1"
-            >
+            <label className="block text-sm font-medium text-slate-200 mb-1">
+              Nombre
+            </label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={handleChange("name")}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              placeholder="Tu nombre"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-200 mb-1">
               Email
             </label>
             <input
-              id="email"
               type="email"
-              autoComplete="email"
               value={form.email}
               onChange={handleChange("email")}
               className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -85,20 +110,15 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-slate-200 mb-1"
-            >
+            <label className="block text-sm font-medium text-slate-200 mb-1">
               Contraseña
             </label>
             <input
-              id="password"
               type="password"
-              autoComplete="current-password"
               value={form.password}
               onChange={handleChange("password")}
               className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              placeholder="••••••••"
+              placeholder="mínimo 6 caracteres"
             />
           </div>
 
@@ -113,22 +133,21 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-70 disabled:cursor-not-allowed text-slate-950 font-medium py-2.5 text-sm transition"
           >
-            {loading ? "Iniciando sesión..." : "Entrar"}
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
-        <p className="mt-6 text-xs text-slate-500 text-center">
-          ¿No tienes cuenta?{" "}
-          <a
-            href="/register"
-            className="text-emerald-400 hover:text-emerald-300 underline"
-          >
-            Regístrate
-          </a>
-        </p>
 
-        <p className="mt-6 text-xs text-slate-500 text-center">
-          Proyecto SpringTrip — Login conectado al backend.
-        </p>
+        <div className="mt-6 text-xs text-slate-500 text-center space-y-2">
+          <p>
+            ¿Ya tienes cuenta?{" "}
+            <button
+              onClick={() => router.push("/login")}
+              className="text-emerald-400 hover:text-emerald-300 underline"
+            >
+              Inicia sesión
+            </button>
+          </p>
+        </div>
       </div>
     </main>
   );

@@ -1,59 +1,38 @@
+import { API_BASE_URL, ApiError, parseError } from "./client";
 
+export async function register(name: string, email: string, password: string) {
+  const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+  if (!res.ok) {
+    throw new ApiError(await parseError(res, "Error al registrarse"), res.status);
+  }
+
+  return (await res.json()) as { id: number; name: string; email: string };
+}
 
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
-
 export interface LoginResponse {
   token: string;
 }
 
-
-export interface AuthUser {
-  id: number;
-  email: string;
-  fullName: string;
-  roles: string[];
-}
-
-export class ApiError extends Error {
-  status: number;
-
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
-  }
-}
-
-export async function login(
-  credentials: LoginRequest
-): Promise<LoginResponse> {
+export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(credentials),
   });
 
   if (!response.ok) {
-    let message = "Error al iniciar sesión";
-
-    try {
-      const data = (await response.json()) as { message?: string };
-      if (data.message) message = data.message;
-    } catch {
-      // ignoramos error de parseo
-    }
-
-    throw new ApiError(message, response.status);
+    throw new ApiError(await parseError(response, "Error al iniciar sesión"), response.status);
   }
 
-  const data = (await response.json()) as LoginResponse;
-  return data;
+  return (await response.json()) as LoginResponse;
 }
