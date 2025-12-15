@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getTrips, Trip, ApiError } from "@/lib/api/trips";
+import { getTrips, Trip } from "@/lib/api/trips";
+import { ApiError } from "@/lib/api/client";
 
 export default function DashboardPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
