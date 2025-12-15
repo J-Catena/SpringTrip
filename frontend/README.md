@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SpringTrip — Frontend
 
-## Getting Started
+SpringTrip is a full-stack web application designed to manage shared travel expenses in a simple, transparent way.
 
-First, run the development server:
+This repository contains the **frontend**, built with **Next.js (App Router)** and connected to a secured Spring Boot backend using **JWT authentication**.
 
+---
+
+##  What does the app do?
+
+SpringTrip allows a user to:
+
+- Register and log in securely
+- Create trips
+- Add participants to each trip
+- Register expenses paid by participants
+- Automatically calculate balances
+- Generate clear payment instructions (who pays whom and how much)
+
+Everything works end-to-end without manual API tools (no Postman required).
+
+---
+
+##  Why this project exists
+
+This project was built as a **realistic full-stack exercise**, focusing on:
+
+- Clean separation between frontend and backend
+- Real authentication and authorization (JWT)
+- Real business logic (expense splitting, balances, settlements)
+- Error handling and protected routes
+- A usable UI, not just API calls
+
+It is **not a demo**, but a complete working application.
+
+---
+
+##  Tech Stack
+
+### Frontend
+- **Next.js 15** (App Router)
+- **TypeScript**
+- **Tailwind CSS**
+- Client-side authentication with JWT
+- Modular API layer (`lib/api`)
+- Protected routes and redirects
+
+### Backend (separate repository)
+- **Java 21**
+- **Spring Boot**
+- **Spring Security + JWT**
+- **JPA / Hibernate**
+- Deployed on **Render**
+
+---
+
+##  Authentication Flow
+
+1. User registers or logs in
+2. Backend returns a JWT
+3. Token is stored in localStorage
+4. All protected requests include `Authorization: Bearer <token>`
+5. Invalid or expired tokens automatically redirect to login
+
+---
+
+##  Running the project locally
+
+### 1. Install dependencies
 ```bash
+npm install
+
+2. Environment variables
+
+Create a .env.local file:
+
+NEXT_PUBLIC_API_BASE_URL=https://springtrip-backend.onrender.com
+
+3. Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open:
+ http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ Tested flows
 
-## Learn More
+Register → Login → Create trip
 
-To learn more about Next.js, take a look at the following resources:
+Add participants
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Add expenses
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Automatic balance recalculation
 
-## Deploy on Vercel
+Settlement instructions generation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Auth protection (401 / 403 handling)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+📸 Screenshots
+
+(Add 2–3 screenshots here: trips list, trip detail with summary + settlement)
+
+ Project status
+
+✅ Core functionality complete
+✅ Stable and deployed backend
+✅ Ready for portfolio presentation
+
+Possible future improvements (not required for current scope):
+
+User invitations by email
+
+Expense categories
+
+Currency conversion
+
+Mobile optimizations
+
+ Author
+
+Juan Catena Marín
+Backend-oriented Java developer transitioning into full-stack development.

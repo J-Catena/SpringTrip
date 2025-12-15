@@ -6,34 +6,42 @@ This backend powers the future full-stack application (Next.js frontend).
 
 ---
 
-# 🚀 Features
+#  Features
 
-### 🔐 Authentication & Security
+###  Authentication & Security
 - User registration & login
 - JWT-based stateless authentication
 - Ownership-based authorization (each trip belongs to exactly one user)
 - Protected endpoints for trips, participants, expenses, summary & settlement
 
-### ✈️ Trips
+###  Trips
 - Create, list, update and delete trips
 - Trips are always linked to the authenticated user (owner)
 
-### 👥 Participants
+###  Participants
 - Add/update/delete participants inside a trip
 - A participant belongs to exactly one trip
 
-### 💸 Expenses
+###  Expenses
 - Add/update/delete expenses
 - Validation: payer must be a participant of the trip
 - Date validation inside the trip's range
 
-### 📊 Summary & Settlement
+###  Summary & Settlement
 - Summary: total paid per participant + balance (positive = must receive, negative = must pay)
 - Settlement: minimal set of payments required to settle the trip
 
+## Real Usage Flow
+
+1. User registers and logs in (JWT issued)
+2. User creates a trip (becomes owner)
+3. Participants and expenses are added
+4. Backend calculates balances and settlement
+5. Frontend consumes summary & settlement endpoints in real time
+
 ---
 
-# 🧱 Tech Stack
+#  Tech Stack
 
 - **Java 21**
 - **Spring Boot 3**
@@ -96,7 +104,7 @@ src/main/java/com/jcatena/travelbackend
 
 ---
 
-# 📡 API Documentation
+#  API Documentation
 
 Complete endpoint documentation is available at:  
 `docs/api.md`
@@ -136,7 +144,7 @@ Copiar código
 http://localhost:8080
 Use Postman to register, login, and test all secured endpoints with the generated JWT token.
 
-✔️ Backend Status
+ Backend Status
 Completed:
 
 JWT authentication
@@ -153,17 +161,17 @@ Postman Collection
 
 CORS ready for frontend (http://localhost:3000)
 
-Next steps:
+Deployment:
 
-Frontend with Next.js + TypeScript
+The backend is deployed on **Render** and actively consumed by the Next.js frontend.
 
-Deploy backend (Railway / Render)
+The API is production-ready and secured using JWT.
 
 CI/CD (optional)
 
 Integration tests (optional)
 
-🎯 Project Purpose
+ Project Purpose
 SpringTrip is a portfolio-grade backend system designed to demonstrate:
 
 Real authentication & authorization
@@ -180,7 +188,7 @@ Ability to build production-ready systems
 
 This is not a demo API — it's the backend of a real application.
 
-👤 Author
+ Author
 Juan Catena — Backend Developer (Java · Spring Boot)
 Portfolio: https://juancatena.vercel.app
 LinkedIn: https://www.linkedin.com/in/juan-catena-marin
