@@ -1,186 +1,284 @@
-# SpringTrip — Backend for Group Trip & Shared Expense Management
+SpringTrip — Travel Expense Splitter
 
-SpringTrip is a **secure backend API** built with **Java + Spring Boot**, designed to manage group trips, participants and shared expenses, including automatic balance calculation (summary) and settlement (who pays whom).
+Aplicación full-stack para gestionar gastos compartidos de viajes
 
-This backend powers the future full-stack application (Next.js frontend).
+🇪🇸 Descripción (Español)
 
----
+SpringTrip es una aplicación full-stack diseñada para gestionar gastos compartidos en viajes de forma sencilla y clara.
 
-# 🚀 Features
+Permite:
 
-### 🔐 Authentication & Security
-- User registration & login
-- JWT-based stateless authentication
-- Ownership-based authorization (each trip belongs to exactly one user)
-- Protected endpoints for trips, participants, expenses, summary & settlement
+Crear viajes con nombre, destino, fechas y moneda.
 
-### ✈️ Trips
-- Create, list, update and delete trips
-- Trips are always linked to the authenticated user (owner)
+Añadir participantes.
 
-### 👥 Participants
-- Add/update/delete participants inside a trip
-- A participant belongs to exactly one trip
+Registrar gastos asociados a un pagador.
 
-### 💸 Expenses
-- Add/update/delete expenses
-- Validation: payer must be a participant of the trip
-- Date validation inside the trip's range
+Ver un resumen automático de cuánto ha pagado cada persona.
 
-### 📊 Summary & Settlement
-- Summary: total paid per participant + balance (positive = must receive, negative = must pay)
-- Settlement: minimal set of payments required to settle the trip
+Obtener las instrucciones mínimas de pago (“X debe pagar a Y Z €”).
 
----
+Este proyecto demuestra dominio en:
 
-# 🧱 Tech Stack
+Java 21 + Spring Boot 3
 
-- **Java 21**
-- **Spring Boot 3**
-- **Spring Web**
-- **Spring Security + JWT**
-- **Spring Data JPA / Hibernate**
-- **H2 Database (dev)**
-- **Maven**
-- **Lombok**
+Next.js 15 + TypeScript
 
-Testing:
-- **JUnit 5**
-- **Mockito** (service tests)
+JWT Authentication
 
-Documentation:
-- `docs/api.md` — full endpoint reference
-- Postman collection included
+Arquitectura limpia, validaciones, pruebas y experiencia completa de usuario.
 
----
+⚙️ Tecnologías Principales
+Backend (/backend)
 
-# 📂 Project Structure
+Java 21
 
-src/main/java/com/jcatena/travelbackend
-│
-├── auth
-│ ├── AuthController.java
-│ ├── JwtService.java
-│ ├── JwtAuthenticationFilter.java
-│ └── SecurityConfig.java
-│
-├── user
-│ ├── User.java
-│ ├── UserRepository.java
-│ └── UserService.java
-│
-├── trip
-│ ├── TripController.java
-│ ├── TripService.java
-│ ├── TripRepository.java
-│ └── dto/
-│
-├── participant
-│ ├── ParticipantController.java
-│ ├── ParticipantService.java
-│ ├── ParticipantRepository.java
-│ └── dto/
-│
-├── expense
-│ ├── ExpenseController.java
-│ ├── ExpenseService.java
-│ ├── ExpenseRepository.java
-│ └── dto/
-│
-├── common
-│ └── exceptions/
-│
-└── docs
-└── api.md
+Spring Boot 3.5
 
+Spring Security + JWT
 
----
+Spring Data JPA
 
-# 📡 API Documentation
+H2 / PostgreSQL
 
-Complete endpoint documentation is available at:  
-`docs/api.md`
+Maven
 
-You will find:
+Pruebas de dominio (summary, settlement, expenses, trips)
 
-- Auth (register, login)
-- Trips CRUD
-- Participants CRUD
-- Expenses CRUD
-- Summary
-- Settlement
-- Request/response examples
-- Status codes
-- Usage notes
+Frontend (/frontend)
 
-A Postman collection is also included in `/postman/`.
+Next.js 15 (App Router)
 
----
+TypeScript
 
-# ▶️ Running the Project
+React
 
-Clone the repository:
+Tailwind CSS
 
-```sh
-git clone https://github.com/J-Catena/SpringTrip.git
-cd SpringTrip
-Run the application:
+Fetch API + JWT
 
-sh
-Copiar código
+Rutas protegidas y control de sesión
+
+🚀 Funcionalidades Principales
+🔐 Autenticación
+
+Registro (POST /api/auth/register)
+
+Login con JWT
+
+Acceso restringido por propietario del viaje
+
+🗺️ Viajes
+
+Crear viajes con validaciones completas
+
+Listado de viajes del usuario autenticado
+
+👥 Participantes
+
+Añadir participantes
+
+Asociarlos como posibles pagadores de gastos
+
+💸 Gastos
+
+Validaciones en backend:
+
+Pagador debe pertenecer al viaje
+
+Fecha dentro del rango del viaje
+
+Importe > 0
+
+📊 Resumen y liquidación
+
+/summary: balance total y por participante
+
+/settlement: instrucciones de pago mínimas
+
+🖥️ Frontend funcional
+
+Login conectado a JWT
+
+Dashboard
+
+Crear viajes
+
+Detalle con recalculado automático
+
+📁 Estructura del Proyecto
+SpringTrip/
+  backend/                
+    src/main/java/...     
+    src/test/java/...      
+    docs/api.md           
+
+  frontend/
+    app/
+      login/
+      dashboard/
+      trips/
+        new/
+        [id]/
+    lib/api/
+    lib/utils/
+
+🧪 Cómo Ejecutarlo en Local
+1. Backend
+cd backend
 ./mvnw spring-boot:run
-The API will start at:
 
-arduino
-Copiar código
-http://localhost:8080
-Use Postman to register, login, and test all secured endpoints with the generated JWT token.
 
-✔️ Backend Status
-Completed:
+Corre en:
+👉 http://localhost:8080
 
-JWT authentication
+Documentación: backend/docs/api.md
 
-All CRUD operations (Trips, Participants, Expenses)
+2. Frontend
+cd frontend
+npm install
+npm run dev
 
-Summary & Settlement logic
 
-Service-level tests
+Disponible en:
+👉 http://localhost:3000
 
-Full API documentation (api.md)
+Crear archivo .env.local:
 
-Postman Collection
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 
-CORS ready for frontend (http://localhost:3000)
+☁️ Demo / Deploy (Próximamente)
+Servicio	Estado
+Backend (Render / Railway)	🔄 Preparando
+Frontend (Vercel)	🔄 Preparando
+Demo pública	🔜 Próximamente
 
-Next steps:
+URL prevista:
+https://springtrip.vercel.app
 
-Frontend with Next.js + TypeScript
+🧪 Tests
 
-Deploy backend (Railway / Render)
+Incluidos en el backend:
 
-CI/CD (optional)
+Lógica de dominio completa
 
-Integration tests (optional)
+Validaciones de negocio
 
-🎯 Project Purpose
-SpringTrip is a portfolio-grade backend system designed to demonstrate:
+Algoritmo de settlement
 
-Real authentication & authorization
+Seguridad: acceso por propietario
 
-Clean, layered architecture
+Ejecutar:
 
-Domain-driven logic
+cd backend
+./mvnw test
 
-Professional API design
+📌 Mejoras Futuras
 
-Testable and extendable backend
+Página de registro en frontend
 
-Ability to build production-ready systems
+Edición de gastos y participantes
 
-This is not a demo API — it's the backend of a real application.
+Eliminación de viajes
 
-👤 Author
-Juan Catena — Backend Developer (Java · Spring Boot)
-Portfolio: https://juancatena.vercel.app
-LinkedIn: https://www.linkedin.com/in/juan-catena-marin
+UI mejorada
+
+Internacionalización
+
+Deploy con PostgreSQL
+
+🇬🇧 English Version
+Overview
+
+SpringTrip is a full-stack application that helps users track shared travel expenses easily and accurately.
+
+It provides:
+
+Trip creation with destination, dates and currency
+
+Participant management
+
+Expense tracking
+
+Automatic balance summary
+
+Minimal payment instructions
+
+This project demonstrates practical skills with:
+
+Java 21 + Spring Boot 3
+
+Next.js 15 + TypeScript
+
+JWT Authentication
+
+Domain logic, validations and clean architecture
+
+Tech Stack
+Backend (/backend)
+
+Java 21
+
+Spring Boot 3
+
+Spring Security + JWT
+
+JPA / Hibernate
+
+Maven
+
+Domain & service tests
+
+Frontend (/frontend)
+
+Next.js 15
+
+TypeScript
+
+React
+
+Tailwind CSS
+
+Fetch API + JWT
+
+Features
+
+Authentication: register, login, owner-based resource access
+
+Trips: create and list trips
+
+Participants: add participants
+
+Expenses: add expenses with validations
+
+Summary & Settlement: per-user balance, minimal payment calculations
+
+Project Structure
+backend/   → Spring Boot API
+frontend/  → Next.js 15 application
+
+Running Locally
+Backend
+cd backend
+./mvnw spring-boot:run
+
+
+API: http://localhost:8080
+
+Frontend
+cd frontend
+npm install
+npm run dev
+
+
+App: http://localhost:3000
+
+Deployment (coming soon)
+
+Backend on Render / Railway
+
+Frontend on Vercel
+
+License
+
+MIT License.
